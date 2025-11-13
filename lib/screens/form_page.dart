@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -11,12 +12,15 @@ class FormPage extends StatefulWidget {
 class _FormPageState extends State<FormPage> {
   final _formKey = GlobalKey<FormState>();
   final _dateController = TextEditingController();
+  final _titleController = TextEditingController();
+  final _amountController = TextEditingController();
+  final _descriptionController = TextEditingController();
   String? selectedType;
   String? selectedCategory;
 
   final Map<String, List<String>> categoryByType = {
-    'Income': ['Wage', 'Allowance'],
-    'Expense': ['Food', 'Transport', 'Entertainment'],
+    'Income': ['Salary', 'Wages', 'Bonus', 'Commission', 'Gifts'],
+    'Expense': ['Food', 'Transportation', 'Entertainment', 'Utilities', 'Health', 'Miscellaneous'],
   };
 
   List<String> getCategories() {
@@ -24,6 +28,40 @@ class _FormPageState extends State<FormPage> {
       return [];
     }
     return categoryByType[selectedType] ?? [];
+  }
+
+  // submit form to firestore
+  final CollectionReference transactions = FirebaseFirestore.instance.collection('Transaction');
+
+  Future<void> submitForm() async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        DateTime date = DateFormat('dd/MM/yyyy').parse(_dateController.text);
+        await transactions.add({
+          'date': Timestamp.fromDate(date),
+          'type': selectedType,
+          'category': selectedCategory,
+          'title': _titleController.text,
+          'amount': double.parse(_amountController.text),
+          'description': _descriptionController.text,
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Saved successfully!'))
+        );
+        // clear form text
+        _formKey.currentState!.reset();
+        _dateController.clear();
+        _titleController.clear();
+        _amountController.clear();
+        _descriptionController.clear();
+        setState(() {
+          selectedType = null;
+          selectedCategory = null;
+        });
+      } catch (e) {
+        print('Error: $e');
+      }
+    }
   }
 
   @override
@@ -52,7 +90,7 @@ class _FormPageState extends State<FormPage> {
                       width: 32,
                       height: 32,
                       decoration: BoxDecoration(
-                        color: Colors.blue,
+                        color: Color.fromRGBO(171, 244, 236, 1),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(Icons.calendar_today, color: Colors.black, size: 20),
@@ -71,12 +109,18 @@ class _FormPageState extends State<FormPage> {
                   DateTime? pickedDate = await showDatePicker(
                     context: context, 
                     initialDate: DateTime.now(),
-                    firstDate: DateTime(2000), 
-                    lastDate: DateTime(2100)
+                    firstDate: DateTime(2020), 
+                    lastDate: DateTime(2030)
                   );
                   if (pickedDate != null) {
                     _dateController.text = DateFormat('dd/MM/yyyy').format(pickedDate);
                   }
+                },
+                validator: (String? value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please select a date';
+                  }
+                  return null;
                 },
               ),
               SizedBox(height: 30),
@@ -94,7 +138,7 @@ class _FormPageState extends State<FormPage> {
                             width: 32,
                             height: 32,
                             decoration: BoxDecoration(
-                              color: Colors.blue,
+                              color: Color.fromRGBO(171, 244, 236, 1),
                               shape: BoxShape.circle,
                             ),
                             child: Icon(Icons.swap_vert_rounded, color: Colors.black, size: 25),
@@ -119,7 +163,14 @@ class _FormPageState extends State<FormPage> {
                           selectedType = value;
                           selectedCategory = null;
                         });
-                      }
+                      },
+                      value: selectedType,
+                      validator: (String? value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please select type';
+                        }
+                        return null;
+                      },
                     ),
                   ),
                   SizedBox(width: 20),
@@ -134,7 +185,7 @@ class _FormPageState extends State<FormPage> {
                             width: 32,
                             height: 32,
                             decoration: BoxDecoration(
-                              color: Colors.blue,
+                              color: Color.fromRGBO(171, 244, 236, 1),
                               shape: BoxShape.circle,
                             ),
                             child: Icon(Icons.category_rounded, color: Colors.black, size: 20),
@@ -158,7 +209,14 @@ class _FormPageState extends State<FormPage> {
                         setState(() {
                           selectedCategory = value;
                         });
-                      }
+                      },
+                      value: selectedCategory,
+                      validator: (String? value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please select category';
+                        }
+                        return null;
+                      },
                     ),
                   ),
                 ],
@@ -166,6 +224,7 @@ class _FormPageState extends State<FormPage> {
               SizedBox(height: 30),
               // Title
               TextFormField(
+                controller: _titleController,
                 decoration: InputDecoration(
                   labelText: 'Title',
                   prefixIcon: Padding(
@@ -174,7 +233,7 @@ class _FormPageState extends State<FormPage> {
                       width: 32,
                       height: 32,
                       decoration: BoxDecoration(
-                        color: Colors.blue,
+                        color: Color.fromRGBO(171, 244, 236, 1),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(Icons.edit, color: Colors.black, size: 20),
@@ -189,10 +248,18 @@ class _FormPageState extends State<FormPage> {
                     borderRadius: BorderRadius.circular(30)
                   ),
                 ),
+                validator: (String? value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a title';
+                  }
+                  return null;
+                },
               ),
               SizedBox(height: 30),
               // Amount
               TextFormField(
+                controller: _amountController,
+                keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                   labelText: 'Amount',
                   suffixText: '฿',
@@ -202,7 +269,7 @@ class _FormPageState extends State<FormPage> {
                       width: 32,
                       height: 32,
                       decoration: BoxDecoration(
-                        color: Colors.blue,
+                        color: Color.fromRGBO(171, 244, 236, 1),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(Icons.money_rounded, color: Colors.black, size: 20),
@@ -217,10 +284,17 @@ class _FormPageState extends State<FormPage> {
                     borderRadius: BorderRadius.circular(30)
                   ),
                 ),
+                validator: (String? value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter amount';
+                  }
+                  return null;
+                },
               ),
               SizedBox(height: 30),
               // Description
               TextFormField(
+                controller: _descriptionController,
                 decoration: InputDecoration(
                   labelText: 'Description',
                   prefixIcon: Padding(
@@ -229,7 +303,7 @@ class _FormPageState extends State<FormPage> {
                       width: 32,
                       height: 32,
                       decoration: BoxDecoration(
-                        color: Colors.blue,
+                        color: Color.fromRGBO(171, 244, 236, 1),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(Icons.description_rounded, color: Colors.black, size: 20),
@@ -249,10 +323,10 @@ class _FormPageState extends State<FormPage> {
               // Submit button
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
+                  backgroundColor: Color.fromRGBO(212, 240, 87, 1)
                 ),
                 onPressed: () {
-
+                  submitForm();
                 },
                 child: Text(
                   'Submit',

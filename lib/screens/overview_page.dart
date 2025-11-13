@@ -22,9 +22,19 @@ class _OverviewPageState extends State<OverviewPage> {
     'Exchange'
   ];
 
+  final _monthController = TextEditingController();
+  String? selectedMonth;
+  String? selectedYear;
+
+  double totalBalance = 0.0;
+  double totalIncome = 0.0;
+  double totalExpense = 0.0;
+
+  
+
   @override
   Widget build(BuildContext context) {
-    List<Widget> _pages = [
+    List<Widget> pages = [
       FormPage(),
       _buildOverview(),
       ExchangePage(),
@@ -33,13 +43,120 @@ class _OverviewPageState extends State<OverviewPage> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       bottomNavigationBar: _navBar(),
-      body: _pages[selectedIndex]
+      body: pages[selectedIndex]
     );
   }
 
   Widget _buildOverview() {
-    return Center(
-      child: Text('Overview Page')
+    return Padding(
+      padding: EdgeInsets.all(20),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Label month
+              Text(
+                selectedMonth ?? 'Month',
+                style: TextStyle(
+                  fontFamily: 'Animal Chariot',
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold
+                ),
+              ),
+              SizedBox(width: 30),
+              // Month
+              Expanded(
+                child: DropdownButtonFormField(
+                  value: selectedMonth,
+                  decoration: InputDecoration(
+                    labelText: 'Month',
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.black),
+                      borderRadius: BorderRadius.circular(30)
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.black, width: 1.5),
+                      borderRadius: BorderRadius.circular(30)
+                    ),
+                  ),
+                  items: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map((String month) =>
+                    DropdownMenuItem(
+                      value: month,
+                      child: Text(month),
+                    )).toList(),
+                  onChanged: (String? value) {
+                    setState(() {
+                      selectedMonth = value;
+                    });
+                  },
+                ),
+              ),
+              SizedBox(width: 10),
+              // Year
+              Expanded(
+                child: DropdownButtonFormField(
+                  decoration: InputDecoration(
+                    labelText: 'Year',
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.black),
+                      borderRadius: BorderRadius.circular(30)
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.black, width: 1.5),
+                      borderRadius: BorderRadius.circular(30)
+                    ),
+                  ),
+                  items: ['2020', '2021', '2022', '2023', '2024', '2025', '2026', '2027', '2028', '2029', '2030'].map((String year) =>
+                    DropdownMenuItem(
+                      value: year,
+                      child: Text(year),
+                    )).toList(),
+                  onChanged: (String? value) {
+                    setState(() {
+                      selectedYear = value;
+                    });
+                  },
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 20),
+          // Summary amount
+          Container(
+            padding: EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.black),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                // Total
+                Text('Balance\n฿ 0.00'),
+                // Income
+                Text('Income\n฿ 0.00'),
+                // Expense
+                Text('Expense\n฿ 0.00')
+              ],
+            )
+          ),
+          SizedBox(height: 15),
+          // Pie chart
+          Container(
+            height: 200,
+            padding: EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.black),
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          SizedBox(height: 15),
+          
+        ],
+      )
     );
   }
 
