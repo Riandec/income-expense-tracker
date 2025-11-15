@@ -25,7 +25,6 @@ class _OverviewPageState extends State<OverviewPage> {
     'Exchange'
   ];
 
-  final _monthController = TextEditingController();
   String? selectedMonth;
   String? selectedYear;
 
@@ -93,7 +92,7 @@ class _OverviewPageState extends State<OverviewPage> {
         totalBalance = income - expense;
         incomeCategory = incomeCategoryData;
         expenseCategory = expenseCategoryData;
-        allCategory = {...incomeCategoryData, ...expenseCategoryData};
+        allCategory = {...incomeCategory, ...expenseCategory};
       });
     } catch (e) {
       print('Error: $e');
@@ -116,14 +115,12 @@ class _OverviewPageState extends State<OverviewPage> {
   }
 
   Widget _buildOverview() {
-    return Padding(
+    return SingleChildScrollView(
       padding: EdgeInsets.all(20),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Label month
               Text(
@@ -150,11 +147,8 @@ class _OverviewPageState extends State<OverviewPage> {
                       borderRadius: BorderRadius.circular(30)
                     ),
                   ),
-                  items: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map((String month) =>
-                    DropdownMenuItem(
-                      value: month,
-                      child: Text(month),
-                    )).toList(),
+                  items: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+                    .map((String month) => DropdownMenuItem(value: month, child: Text(month))).toList(),
                   onChanged: (String? value) {
                     setState(() {
                       selectedMonth = value;
@@ -179,11 +173,8 @@ class _OverviewPageState extends State<OverviewPage> {
                       borderRadius: BorderRadius.circular(30)
                     ),
                   ),
-                  items: ['2020', '2021', '2022', '2023', '2024', '2025', '2026', '2027', '2028', '2029', '2030'].map((String year) =>
-                    DropdownMenuItem(
-                      value: year,
-                      child: Text(year),
-                    )).toList(),
+                  items: ['2020', '2021', '2022', '2023', '2024', '2025', '2026', '2027', '2028', '2029', '2030']
+                    .map((String year) => DropdownMenuItem(value: year, child: Text(year))).toList(),
                   onChanged: (String? value) {
                     setState(() {
                       selectedYear = value;
@@ -205,46 +196,95 @@ class _OverviewPageState extends State<OverviewPage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                // Total
                 Text('Balance\n฿ ${totalBalance.toStringAsFixed(2)}'),
-                // Income
                 Text('Income\n฿ ${totalIncome.toStringAsFixed(2)}'),
-                // Expense
                 Text('Expense\n฿ ${totalExpense.toStringAsFixed(2)}')
               ],
             )
           ),
           SizedBox(height: 15),
           // Pie chart
-          Row(
-            children: [
-              _buildPieChart(incomeCategory, totalIncome),
-              SizedBox(width: 15),
-              _buildPieChart(expenseCategory, totalExpense),
-            ]
+          SizedBox(
+            height: 200,
+            child: Row(
+              children: [
+                _buildPieChart(incomeCategory, totalIncome, 'Income'),
+                SizedBox(width: 15),
+                _buildPieChart(expenseCategory, totalExpense, 'Expense'),
+              ]
+            ),
           ),
           SizedBox(height: 15),
           // Category list
-          Container(
-            height: 100,
-            padding: EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.black),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: allCategory.length,
-                    itemBuilder: (context, index) {
-                      return Text(allCategory.keys.elementAt(index) + ' ');
-                    } 
+          SizedBox(
+            height: 80,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: allCategory.length,
+              itemBuilder: (context, index) {
+                var sortAmount = allCategory.entries.toList();
+                sortAmount.sort((a, b) => b.value.compareTo(a.value)); // desc
+                String category = sortAmount[index].key;
+                double amount = sortAmount[index].value;
+                bool isIncome = incomeCategory.containsKey(category);
+                return Container(
+                  padding: EdgeInsets.all(10),
+                  margin: EdgeInsets.only(right: 10),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: isIncome ? Colors.green : Colors.red),
+                    borderRadius: BorderRadius.circular(10)
                   ),
-                )
-              ],
-            )
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(category),
+                      SizedBox(height: 5),
+                      Text('฿ ${amount.toStringAsFixed(2)}'),
+                    ],
+                  )
+                );
+              } 
+            ),
+          ),
+          SizedBox(height: 15),
+          // Transaction list
+          Text('Transactions'),
+          SizedBox(height: 5),
+          StreamBuilder<QuerySnapshot>(
+            stream: transactions
+              .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(DateTime(int.parse(selectedYear!), getMonthNumber(selectedMonth!), 1, 0, 0 ,0 ,0)))
+              .where('date', isLessThanOrEqualTo: Timestamp.fromDate(DateTime(int.parse(selectedYear!), getMonthNumber(selectedMonth!)+1, 0, 23, 59, 59)))
+              .snapshots(),
+            builder:(context, snapshot) {
+              if (snapshot.hasData) {
+                List transactionsList = snapshot.data!.docs;
+                List<String> titles = [];
+                List<Timestamp> date = [];
+                List<double> amount = [];
+                List<String> type = [];
+                for (var doc in transactionsList) {
+                  Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+                  titles.add(data['title']);
+                  date.add(data['date']);
+                  amount.add((data['amount'] as num).toDouble());
+                  type.add(data['type']);
+                }
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemCount: transactionsList.length,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      title: Text(titles[index]),
+                      subtitle: Text(DateFormat('dd MMM yyyy · HH:mm').format(date[index].toDate())),
+                      trailing: Text('${type[index] == 'Income' ? '+' : '-'}${amount[index].toStringAsFixed(2)}'),
+                    );
+                  },
+                );
+              } else {
+                return CircularProgressIndicator();
+              }
+            },
           ),
         ],
       )
@@ -316,7 +356,7 @@ class _OverviewPageState extends State<OverviewPage> {
   }
 
   // Pie chart
-  Widget _buildPieChart(Map<String, double> data, double total) {
+  Widget _buildPieChart(Map<String, double> data, double total, String label) {
     final incomeColors = [
       Color.fromRGBO(91, 124, 255, 1),
       Color.fromRGBO(171, 244, 236, 1),
@@ -335,7 +375,6 @@ class _OverviewPageState extends State<OverviewPage> {
 
     return Expanded(
       child: Container(
-        height: 200,
         padding: EdgeInsets.all(10),
         decoration: BoxDecoration(
           border: Border.all(color: Colors.black),
@@ -344,11 +383,12 @@ class _OverviewPageState extends State<OverviewPage> {
         child: Column(
           children: [
             Text(
-              total == totalIncome ? 'Income' : 'Expense',
+              label,
               style: TextStyle(
                 fontSize: 14,
               ),
             ),
+            SizedBox(height: 5),
             // Pie chart
             Expanded(
               child: Row(
@@ -363,7 +403,7 @@ class _OverviewPageState extends State<OverviewPage> {
                           return PieChartSectionData(
                             value: entry.value,
                             title: '${percentage.toStringAsFixed(0)}%',
-                            color: total == totalIncome ? incomeColors[index % incomeColors.length] : expenseColors[index % expenseColors.length],
+                            color: label == 'Income' ? incomeColors[index % incomeColors.length] : expenseColors[index % expenseColors.length],
                             radius: 25,
                             titleStyle: TextStyle(
                               fontSize: 10,
@@ -395,13 +435,13 @@ class _OverviewPageState extends State<OverviewPage> {
                                   height: 12,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: total == totalIncome ? incomeColors[index % incomeColors.length] : expenseColors[index % expenseColors.length],
+                                    color: label == 'Income' ? incomeColors[index % incomeColors.length] : expenseColors[index % expenseColors.length],
                                   ),
                                 ),
                                 SizedBox(width: 5),
                                 Expanded(
                                   child: Text(
-                                    '${entry.key}',
+                                    entry.key,
                                     style: TextStyle(fontSize: 12),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,

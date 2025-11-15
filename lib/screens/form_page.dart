@@ -36,9 +36,8 @@ class _FormPageState extends State<FormPage> {
   Future<void> submitForm() async {
     if (_formKey.currentState!.validate()) {
       try {
-        DateTime date = DateFormat('dd/MM/yyyy').parse(_dateController.text);
         await transactions.add({
-          'date': Timestamp.fromDate(date),
+          'date': Timestamp.now(),
           'type': selectedType,
           'category': selectedCategory,
           'title': _titleController.text,
@@ -66,7 +65,6 @@ class _FormPageState extends State<FormPage> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Transaction Form')
