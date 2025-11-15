@@ -106,9 +106,8 @@ class _OverviewPageState extends State<OverviewPage> {
       _buildOverview(),
       ExchangePage(),
     ];
-
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: Color.fromRGBO(255, 252, 244, 1),
       bottomNavigationBar: _navBar(),
       body: pages[selectedIndex]
     );
@@ -126,7 +125,8 @@ class _OverviewPageState extends State<OverviewPage> {
               Text(
                 selectedMonth ?? 'Month',
                 style: TextStyle(
-                  fontFamily: 'Animal Chariot',
+                  fontFamily: 'Playfair Display',
+                  fontStyle: FontStyle.italic,
                   fontSize: 32,
                   fontWeight: FontWeight.bold
                 ),
@@ -137,6 +137,8 @@ class _OverviewPageState extends State<OverviewPage> {
                 child: DropdownButtonFormField(
                   value: selectedMonth,
                   decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white,
                     labelText: 'Month',
                     border: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.black),
@@ -163,6 +165,8 @@ class _OverviewPageState extends State<OverviewPage> {
                 child: DropdownButtonFormField(
                   value: selectedYear,
                   decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white,
                     labelText: 'Year',
                     border: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.black),
@@ -192,13 +196,60 @@ class _OverviewPageState extends State<OverviewPage> {
             decoration: BoxDecoration(
               border: Border.all(color: Colors.black),
               borderRadius: BorderRadius.circular(10),
+              color: Colors.white
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                Text('Balance\n฿ ${totalBalance.toStringAsFixed(2)}'),
-                Text('Income\n฿ ${totalIncome.toStringAsFixed(2)}'),
-                Text('Expense\n฿ ${totalExpense.toStringAsFixed(2)}')
+                Column(
+                  children: [
+                    Text(
+                      'Balance',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      '฿ ${totalBalance.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        color: Color.fromRGBO(241, 203, 69, 1)
+                      )
+                    )
+                  ],
+                ),
+                Column(
+                  children: [
+                    Text(
+                      'Income',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      '฿ ${totalIncome.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        color: Color.fromRGBO(148, 213, 95, 1)
+                      )
+                    )
+                  ],
+                ),
+                Column(
+                  children: [
+                    Text(
+                      'Expense',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      '฿ ${totalExpense.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        color: Color.fromRGBO(253, 77, 90, 1)
+                      )
+                    )
+                  ],
+                )
+                
               ],
             )
           ),
@@ -217,7 +268,7 @@ class _OverviewPageState extends State<OverviewPage> {
           SizedBox(height: 15),
           // Category list
           SizedBox(
-            height: 80,
+            height: 70,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               itemCount: allCategory.length,
@@ -231,15 +282,20 @@ class _OverviewPageState extends State<OverviewPage> {
                   padding: EdgeInsets.all(10),
                   margin: EdgeInsets.only(right: 10),
                   decoration: BoxDecoration(
-                    border: Border.all(color: isIncome ? Colors.green : Colors.red),
-                    borderRadius: BorderRadius.circular(10)
+                    border: Border.all(color: Colors.black),
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.white
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(category),
-                      SizedBox(height: 5),
-                      Text('฿ ${amount.toStringAsFixed(2)}'),
+                      Text(
+                        '฿ ${amount.toStringAsFixed(2)}',
+                        style: TextStyle(
+                          color: isIncome ? Color.fromRGBO(148, 213, 95, 1) : Color.fromRGBO(253, 77, 90, 1)
+                        ),
+                      ),
                     ],
                   )
                 );
@@ -248,7 +304,13 @@ class _OverviewPageState extends State<OverviewPage> {
           ),
           SizedBox(height: 15),
           // Transaction list
-          Text('Transactions'),
+          Text(
+            'Transactions History',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold
+            ),
+          ),
           SizedBox(height: 5),
           StreamBuilder<QuerySnapshot>(
             stream: transactions
@@ -275,9 +337,30 @@ class _OverviewPageState extends State<OverviewPage> {
                   itemCount: transactionsList.length,
                   itemBuilder: (context, index) {
                     return ListTile(
-                      title: Text(titles[index]),
-                      subtitle: Text(DateFormat('dd MMM yyyy · HH:mm').format(date[index].toDate())),
-                      trailing: Text('${type[index] == 'Income' ? '+' : '-'}${amount[index].toStringAsFixed(2)}'),
+                      dense: true,
+                      visualDensity: VisualDensity(vertical: -4),
+                      contentPadding: EdgeInsets.zero,
+                      leading: Text((index+1).toString()),
+                      title: Text(
+                        titles[index],
+                        style: TextStyle(
+                          fontSize: 15
+                        ),
+                      ),
+                      subtitle: Text(
+                        DateFormat('dd MMM yyyy · HH:mm').format(date[index].toDate()),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey
+                        ),
+                      ),
+                      trailing: Text(
+                        '${type[index] == 'Income' ? '+' : '−'}${amount[index].toStringAsFixed(2)}',
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: type[index] == 'Income' ? Color.fromRGBO(148, 213, 95, 1) : Color.fromRGBO(253, 77, 90, 1)
+                        ),
+                      ),
                     );
                   },
                 );
@@ -358,19 +441,19 @@ class _OverviewPageState extends State<OverviewPage> {
   // Pie chart
   Widget _buildPieChart(Map<String, double> data, double total, String label) {
     final incomeColors = [
-      Color.fromRGBO(91, 124, 255, 1),
-      Color.fromRGBO(171, 244, 236, 1),
+      Color.fromRGBO(126, 238, 226, 1),
+      Color.fromRGBO(174, 238, 121, 1),
       Color.fromRGBO(117, 237, 194, 1),
-      Color.fromRGBO(142, 165, 255, 1),
-      Color.fromRGBO(255, 222, 91, 1),
+      Color.fromRGBO(157, 210, 243, 1),
+      Color.fromRGBO(216, 244, 171, 1),
     ];
     final expenseColors = [
       Color.fromRGBO(253, 77, 90, 1),
       Color.fromRGBO(254, 138, 185, 1),
       Color.fromRGBO(254, 160, 127, 1),
-      Color.fromRGBO(255, 222, 91, 1),
+      Color.fromRGBO(255, 188, 194, 1),
       Color.fromRGBO(253, 77, 193, 1),
-      Color.fromRGBO(223, 127, 254, 1),
+      Color.fromRGBO(254, 130, 87, 1),
     ];
 
     return Expanded(
@@ -379,6 +462,7 @@ class _OverviewPageState extends State<OverviewPage> {
         decoration: BoxDecoration(
           border: Border.all(color: Colors.black),
           borderRadius: BorderRadius.circular(10),
+          color: Colors.white
         ),
         child: Column(
           children: [
@@ -386,6 +470,7 @@ class _OverviewPageState extends State<OverviewPage> {
               label,
               style: TextStyle(
                 fontSize: 14,
+                fontWeight: FontWeight.bold
               ),
             ),
             SizedBox(height: 5),

@@ -67,8 +67,10 @@ class _FormPageState extends State<FormPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Transaction Form')
+        title: Text('Transaction Form'),
+        backgroundColor: Color.fromRGBO(255, 252, 244, 1),
       ),
+      backgroundColor: Color.fromRGBO(255, 252, 244, 1),
       body: Form(
         key: _formKey,
         child: Padding(
@@ -81,6 +83,8 @@ class _FormPageState extends State<FormPage> {
                 controller: _dateController,
                 readOnly: true,
                 decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
                   labelText: 'Date',
                   prefixIcon: Padding(
                     padding: EdgeInsets.only(left: 10, right: 5),
@@ -129,6 +133,8 @@ class _FormPageState extends State<FormPage> {
                   Expanded(
                     child: DropdownButtonFormField(
                       decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.white,
                         labelText: 'Type',
                         prefixIcon: Padding(
                           padding: EdgeInsets.only(left: 10, right: 5),
@@ -165,7 +171,7 @@ class _FormPageState extends State<FormPage> {
                       value: selectedType,
                       validator: (String? value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please select type';
+                          return 'Please select a type';
                         }
                         return null;
                       },
@@ -176,6 +182,8 @@ class _FormPageState extends State<FormPage> {
                   Expanded(
                     child: DropdownButtonFormField(
                       decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.white,
                         labelText: 'Category',
                         prefixIcon: Padding(
                           padding: EdgeInsets.only(left: 10, right: 5),
@@ -211,7 +219,7 @@ class _FormPageState extends State<FormPage> {
                       value: selectedCategory,
                       validator: (String? value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please select category';
+                          return 'Please select a category';
                         }
                         return null;
                       },
@@ -224,6 +232,8 @@ class _FormPageState extends State<FormPage> {
               TextFormField(
                 controller: _titleController,
                 decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
                   labelText: 'Title',
                   prefixIcon: Padding(
                     padding: EdgeInsets.only(left: 10, right: 5),
@@ -259,6 +269,8 @@ class _FormPageState extends State<FormPage> {
                 controller: _amountController,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
                   labelText: 'Amount',
                   suffixText: '฿',
                   prefixIcon: Padding(
@@ -284,7 +296,7 @@ class _FormPageState extends State<FormPage> {
                 ),
                 validator: (String? value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter amount';
+                    return 'Please enter an amount';
                   }
                   return null;
                 },
@@ -294,6 +306,8 @@ class _FormPageState extends State<FormPage> {
               TextFormField(
                 controller: _descriptionController,
                 decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
                   labelText: 'Description',
                   prefixIcon: Padding(
                     padding: EdgeInsets.only(left: 10, right: 5),
