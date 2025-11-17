@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:income_expense_tracker/screens/form_page.dart';
-import 'package:income_expense_tracker/screens/exchange_page.dart';
+import 'package:income_expense_tracker/screens/categories_page.dart';
 import 'package:intl/intl.dart';
 
 class OverviewPage extends StatefulWidget {
@@ -17,12 +17,12 @@ class _OverviewPageState extends State<OverviewPage> {
   List<IconData> navIcons = [
     Icons.insert_comment_rounded,
     Icons.home_rounded,
-    Icons.currency_exchange_rounded
+    Icons.category_rounded
   ];
   List<String> navTitles = [
     'Form',
     'Overview',
-    'Exchange'
+    'Categories'
   ];
 
   String? selectedMonth;
@@ -104,7 +104,7 @@ class _OverviewPageState extends State<OverviewPage> {
     List<Widget> pages = [
       FormPage(),
       _buildOverview(),
-      ExchangePage(),
+      CategoriesPage(),
     ];
     return Scaffold(
       backgroundColor: Color.fromRGBO(255, 252, 244, 1),
@@ -115,27 +115,32 @@ class _OverviewPageState extends State<OverviewPage> {
 
   Widget _buildOverview() {
     return SingleChildScrollView(
-      padding: EdgeInsets.all(20),
+      padding: EdgeInsets.only(left: 20, right: 20, top: 60),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               // Label month
-              Text(
-                selectedMonth ?? 'Month',
-                style: TextStyle(
-                  fontFamily: 'Playfair Display',
-                  fontStyle: FontStyle.italic,
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold
+              SizedBox(
+                width: 120,
+                child: Text(
+                  selectedMonth ?? 'Month',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'Playfair Display',
+                    fontStyle: FontStyle.italic,
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold
+                  ),
                 ),
               ),
-              SizedBox(width: 30),
+              SizedBox(width: 10),
               // Month
               Expanded(
                 child: DropdownButtonFormField(
                   value: selectedMonth,
+                  isExpanded: true,
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: Colors.white,
@@ -150,7 +155,14 @@ class _OverviewPageState extends State<OverviewPage> {
                     ),
                   ),
                   items: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-                    .map((String month) => DropdownMenuItem(value: month, child: Text(month))).toList(),
+                    .map((String month) => DropdownMenuItem(
+                      value: month, 
+                      child: Text(
+                        month,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      )
+                    )).toList(),
                   onChanged: (String? value) {
                     setState(() {
                       selectedMonth = value;
@@ -178,7 +190,10 @@ class _OverviewPageState extends State<OverviewPage> {
                     ),
                   ),
                   items: ['2020', '2021', '2022', '2023', '2024', '2025', '2026', '2027', '2028', '2029', '2030']
-                    .map((String year) => DropdownMenuItem(value: year, child: Text(year))).toList(),
+                    .map((String year) => DropdownMenuItem(
+                      value: year, 
+                      child: Text(year)
+                    )).toList(),
                   onChanged: (String? value) {
                     setState(() {
                       selectedYear = value;
@@ -334,6 +349,7 @@ class _OverviewPageState extends State<OverviewPage> {
                 return ListView.builder(
                   shrinkWrap: true,
                   physics: NeverScrollableScrollPhysics(),
+                  padding: EdgeInsets.zero,
                   itemCount: transactionsList.length,
                   itemBuilder: (context, index) {
                     return ListTile(
@@ -473,7 +489,6 @@ class _OverviewPageState extends State<OverviewPage> {
                 fontWeight: FontWeight.bold
               ),
             ),
-            SizedBox(height: 5),
             // Pie chart
             Expanded(
               child: Row(
@@ -502,6 +517,7 @@ class _OverviewPageState extends State<OverviewPage> {
                       ),
                     )
                   ),
+                  SizedBox(width: 5),
                   // Label category
                   Expanded(
                     flex: 1,
