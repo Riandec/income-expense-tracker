@@ -52,7 +52,6 @@ class _OverviewPageState extends State<OverviewPage> {
     return months[monthNow] ?? 1;
   }
 
-  // Read data from firebase and calculate things
   Future<void> calculateTotals() async {
     if (selectedMonth == null || selectedYear == null) {
       return;
@@ -330,56 +329,45 @@ class _OverviewPageState extends State<OverviewPage> {
               .where('date', isLessThanOrEqualTo: Timestamp.fromDate(DateTime(int.parse(selectedYear!), getMonthNumber(selectedMonth!)+1, 0, 23, 59, 59)))
               .snapshots(),
             builder:(context, snapshot) {
-              if (snapshot.hasData) {
-                List transactionsList = snapshot.data!.docs;
-                List<String> titles = [];
-                List<Timestamp> date = [];
-                List<double> amount = [];
-                List<String> type = [];
-                for (var doc in transactionsList) {
-                  Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-                  titles.add(data['title']);
-                  date.add(data['date']);
-                  amount.add((data['amount'] as num).toDouble());
-                  type.add(data['type']);
-                }
-                return ListView.builder(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  padding: EdgeInsets.zero,
-                  itemCount: transactionsList.length,
-                  itemBuilder: (context, index) {
-                    return ListTile(
-                      dense: true,
-                      visualDensity: VisualDensity(vertical: -4),
-                      contentPadding: EdgeInsets.zero,
-                      leading: Text((index+1).toString()),
-                      title: Text(
-                        titles[index],
-                        style: TextStyle(
-                          fontSize: 15
-                        ),
-                      ),
-                      subtitle: Text(
-                        DateFormat('dd MMM yyyy · HH:mm').format(date[index].toDate()),
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey
-                        ),
-                      ),
-                      trailing: Text(
-                        '${type[index] == 'Income' ? '+' : '−'}${amount[index].toStringAsFixed(2)}',
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: type[index] == 'Income' ? Color.fromRGBO(148, 213, 95, 1) : Color.fromRGBO(253, 77, 90, 1)
-                        ),
-                      ),
-                    );
-                  },
-                );
-              } else {
+              if (!snapshot.hasData) {
                 return CircularProgressIndicator();
               }
+              final data = snapshot.data!.docs;
+              return ListView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                padding: EdgeInsets.zero,
+                itemCount: data.length,
+                itemBuilder: (context, index) {
+                  final transactions = data[index];
+                  return ListTile(
+                    dense: true,
+                    visualDensity: VisualDensity(vertical: -4),
+                    contentPadding: EdgeInsets.zero,
+                    leading: Text((index+1).toString()),
+                    title: Text(
+                      transactions['title'],
+                      style: TextStyle(
+                        fontSize: 15
+                      ),
+                    ),
+                    subtitle: Text(
+                      DateFormat('dd MMM yyyy · HH:mm').format(transactions['date'].toDate()),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey
+                      ),
+                    ),
+                    trailing: Text(
+                      '${transactions['type'] == 'Income' ? '+' : '−'}${transactions['amount'].toStringAsFixed(2)}',
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: transactions['type'] == 'Income' ? Color.fromRGBO(148, 213, 95, 1) : Color.fromRGBO(253, 77, 90, 1)
+                      ),
+                    ),
+                  );
+                },
+              );
             },
           ),
         ],

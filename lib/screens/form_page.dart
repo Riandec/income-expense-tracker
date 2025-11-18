@@ -17,21 +17,17 @@ class _FormPageState extends State<FormPage> {
   final _descriptionController = TextEditingController();
   String? selectedType;
   String? selectedCategory;
-
-  final Map<String, List<String>> categoryByType = {
-    'Income': ['Salary', 'Wages', 'Bonus', 'Commission', 'Gifts'],
-    'Expense': ['Food', 'Transportation', 'Entertainment', 'Utilities', 'Health', 'Miscellaneous'],
-  };
-
-  List<String> getCategories() {
-    if (selectedType == null) {
-      return [];
-    }
-    return categoryByType[selectedType] ?? [];
-  }
-
-  // submit form to firestore
   final CollectionReference transactions = FirebaseFirestore.instance.collection('Transaction');
+  final CollectionReference categories = FirebaseFirestore.instance.collection('Categories');
+
+  Stream<QuerySnapshot> getCategories() {
+    if (selectedType == null) {
+      return Stream.empty();
+    }
+    return categories
+      .where('type', isEqualTo: selectedType)
+      .snapshots();
+  }
 
   Future<void> submitForm() async {
     if (_formKey.currentState!.validate()) {
@@ -44,9 +40,6 @@ class _FormPageState extends State<FormPage> {
           'amount': double.parse(_amountController.text),
           'description': _descriptionController.text,
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Saved successfully!'))
-        );
         // clear form text
         _formKey.currentState!.reset();
         _dateController.clear();
@@ -187,54 +180,95 @@ class _FormPageState extends State<FormPage> {
                   SizedBox(width: 10),
                   // Category
                   Expanded(
-                    child: DropdownButtonFormField(
-                      isExpanded: true,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.white,
-                        labelText: 'Category',
-                        floatingLabelStyle: TextStyle(
-                          color: Colors.black
-                        ),
-                        prefixIcon: Padding(
-                          padding: EdgeInsets.only(left: 10, right: 5),
-                          child: Container(
-                            width: 32,
-                            height: 32,
-                            decoration: BoxDecoration(
-                              color: Color.fromRGBO(171, 244, 236, 1),
-                              shape: BoxShape.circle,
+                    child: StreamBuilder<QuerySnapshot>(
+                      stream: getCategories(), 
+                      builder:(context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return DropdownButtonFormField(
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: Colors.white,
+                              labelText: 'Category',
+                              prefixIcon: Padding(
+                                padding: EdgeInsets.only(left: 10, right: 5),
+                                child: Container(
+                                  width: 32,
+                                  height: 32,
+                                  decoration: BoxDecoration(
+                                    color: Color.fromRGBO(171, 244, 236, 1),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(Icons.category_rounded, color: Colors.black, size: 20),
+                                )
+                              ),
+                              border: OutlineInputBorder(
+                                borderSide: BorderSide(color: Colors.black),
+                                borderRadius: BorderRadius.circular(30)
+                              ),
                             ),
-                            child: Icon(Icons.category_rounded, color: Colors.black, size: 20),
-                          )
-                        ),
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.black),
-                          borderRadius: BorderRadius.circular(30)
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.black, width: 1.5),
-                          borderRadius: BorderRadius.circular(30)
-                        ),
-                      ),
-                      items: getCategories().map((String category) =>
-                        DropdownMenuItem(
-                          value: category,
-                          child: Text(category),
-                        )).toList(),
-                      onChanged: selectedType == null ? null : (String? value) {
-                        setState(() {
-                          selectedCategory = value;
-                        });
-                      },
-                      value: selectedCategory,
-                      validator: (String? value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please select a category';
+                            items: [],
+                            onChanged: null,
+                            value: selectedCategory,
+                            validator: (value) {
+                              if (value == null) {
+                                return 'Please select a category';
+                              }
+                              return null;
+                            },
+                          );
                         }
-                        return null;
+                        final data = snapshot.data!.docs;
+                        return DropdownButtonFormField<String>(
+                          isExpanded: true,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Colors.white,
+                            labelText: 'Category',
+                            floatingLabelStyle: TextStyle(
+                              color: Colors.black
+                            ),
+                            prefixIcon: Padding(
+                              padding: EdgeInsets.only(left: 10, right: 5),
+                              child: Container(
+                                width: 32,
+                                height: 32,
+                                decoration: BoxDecoration(
+                                  color: Color.fromRGBO(171, 244, 236, 1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(Icons.category_rounded, color: Colors.black, size: 20),
+                              )
+                            ),
+                            border: OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.black),
+                              borderRadius: BorderRadius.circular(30)
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.black, width: 1.5),
+                              borderRadius: BorderRadius.circular(30)
+                            ),
+                          ),
+                          items: data.map((doc) {
+                            return DropdownMenuItem<String>(
+                              value: doc['name'],
+                              child: Text(doc['name']),
+                            );
+                          }).toList(),
+                          onChanged: selectedType == null ? null : (String? value) {
+                            setState(() {
+                              selectedCategory = value;
+                            });
+                          },
+                          value: selectedCategory,
+                          validator: (String? value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please select a category';
+                            }
+                            return null;
+                          },
+                        );
                       },
-                    ),
+                    )
                   ),
                 ],
               ),
