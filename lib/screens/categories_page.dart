@@ -10,30 +10,129 @@ class CategoriesPage extends StatefulWidget {
 
 class _CategoriesPageState extends State<CategoriesPage> {
   final CollectionReference categories = FirebaseFirestore.instance.collection('Categories');
+  final _nameController = TextEditingController();
 
-  // create
+  // Create
   Future<void> addCategory(String name, String type) async {
     await categories.add({
       'name': name,
       'type': type,
     });
   }
-  // read
+  // Read
   Stream<QuerySnapshot> getCategories(String type) {
     return categories
     .where('type', isEqualTo: type)
     .snapshots();
   }
-  // edit
+  // Edit
   Future<void> updateCategory(String docId, String newName, String newType) async {
     await categories.doc(docId).update({
     'name': newName,
     'type': newType,
   });
   }
-  // delete
+  // Delete
   Future<void> deleteCategory(String docId) async {
     await categories.doc(docId).delete();
+  }
+  // Dialog
+  void showAddDialog (BuildContext context, String type) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        title: Text('Add $type Category'),
+        content: TextField(
+          controller: _nameController,
+          decoration: InputDecoration(
+            labelText: 'Enter a category name',
+            floatingLabelStyle: TextStyle(
+              color: Colors.black
+            ),
+            filled: true,
+            fillColor: Colors.white,
+            border: OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.black),
+              borderRadius: BorderRadius.circular(30)
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.black, width: 1.5),
+              borderRadius: BorderRadius.circular(30)
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancel',
+              style: TextStyle(
+                color: Colors.redAccent
+              )
+            ),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              side: BorderSide(color: Colors.black),
+              backgroundColor: Colors.white
+            ),
+            onPressed: () {
+              if (_nameController.text.trim().isNotEmpty) {
+                addCategory(_nameController.text.trim(), type);
+                Navigator.pop(context);
+              }
+            },
+            child: Text(
+              'Add',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.black
+              ),
+            ),
+          ),
+        ],
+      )
+    );
+  }
+
+  void showDeleteDialog(BuildContext context, String docId, String categoryName) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        title: Text('Delete Category'),
+        content: Text('Are you sure you want to delete "$categoryName"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancel',
+              style: TextStyle(
+                color: Colors.redAccent
+              )
+            ),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              side: BorderSide(color: Colors.black),
+              backgroundColor: Colors.white
+            ),
+            onPressed: () {
+              deleteCategory(docId);
+              Navigator.pop(context);
+            },
+            child: Text(
+              'Delete',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.black
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -44,10 +143,11 @@ class _CategoriesPageState extends State<CategoriesPage> {
         backgroundColor: Color.fromRGBO(255, 252, 244, 1),
       ),
       backgroundColor: Color.fromRGBO(255, 252, 244, 1),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: EdgeInsets.all(20),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Income list
             Expanded(
@@ -66,7 +166,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
                         border: Border(
                           bottom: BorderSide(color: Colors.black)
                         ),
-                        borderRadius: BorderRadiusGeometry.only(
+                        borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(9),
                           topRight: Radius.circular(9)
                         )
@@ -84,17 +184,61 @@ class _CategoriesPageState extends State<CategoriesPage> {
                     StreamBuilder<QuerySnapshot>(
                       stream: getCategories('Income'), 
                       builder:(context, snapshot) {
-                        if (snapshot.hasData) {
-                          List categoriesList = snapshot.data!.docs;
-                          List<String> names = [];
-                          for (var doc in categoriesList) {
-                            Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-                            names.add(data['name']);
-                          }
-                        } else {
+                        if (!snapshot.hasData) {
                           return CircularProgressIndicator();
                         }
+                        final data = snapshot.data!.docs;
+                        if (data.isEmpty) {
+                          return ListTile(
+                            dense: true,
+                            visualDensity: VisualDensity(vertical: -4),
+                            title: Text(
+                              'No category',
+                              style: TextStyle(
+                                fontSize: 15,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          );
+                        }
+                        return ListView.separated(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemCount: data.length, 
+                          separatorBuilder:(context, index) => Divider(), 
+                          itemBuilder:(context, index) {
+                            final categories = data[index];
+                            return ListTile(
+                              dense: true,
+                              visualDensity: VisualDensity(vertical: -4),
+                              contentPadding: EdgeInsets.only(left: 10),
+                              title: SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Text(
+                                  categories['name'],
+                                  style: TextStyle(
+                                    fontSize: 15
+                                  ),
+                                  maxLines: 1,
+                                ),
+                              ),
+                              trailing: IconButton(
+                                icon: Icon(Icons.delete_outline, size: 20, color: Colors.redAccent),
+                                onPressed: (){
+                                  showDeleteDialog(context, categories.id, categories['name']);
+                                }
+                              ),
+                            );
+                          },
+                        );
                       },
+                    ),
+                    SizedBox(height: 10),
+                    IconButton(
+                      icon: Icon(Icons.add_circle_outline),
+                      onPressed: (){
+                        showAddDialog(context, 'Income');
+                      }, 
                     )
                   ],
                 )
@@ -106,7 +250,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
               child: Container(
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.black),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(10)
                 ),
                 child: Column(
                   children: [
@@ -118,7 +262,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
                         border: Border(
                           bottom: BorderSide(color: Colors.black)
                         ),
-                        borderRadius: BorderRadiusGeometry.only(
+                        borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(9),
                           topRight: Radius.circular(9)
                         )
@@ -132,11 +276,70 @@ class _CategoriesPageState extends State<CategoriesPage> {
                           ),
                         )
                       )
+                    ),
+                    StreamBuilder<QuerySnapshot>(
+                      stream: getCategories('Expense'), 
+                      builder:(context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return CircularProgressIndicator();
+                        }
+                        final data = snapshot.data!.docs;
+                        if (data.isEmpty) {
+                          return ListTile(
+                            dense: true,
+                            visualDensity: VisualDensity(vertical: -4),
+                            title: Text(
+                              'No category',
+                              style: TextStyle(
+                                fontSize: 15,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          );
+                        }
+                        return ListView.separated(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemCount: data.length, 
+                          separatorBuilder:(context, index) => Divider(), 
+                          itemBuilder:(context, index) {
+                            final categories = data[index];
+                            return ListTile(
+                              dense: true,
+                              visualDensity: VisualDensity(vertical: -4),
+                              contentPadding: EdgeInsets.only(left: 10),
+                              title: SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Text(
+                                  categories['name'],
+                                  style: TextStyle(
+                                    fontSize: 15
+                                  ),
+                                  maxLines: 1,
+                                ),
+                              ),
+                              trailing: IconButton(
+                                icon: Icon(Icons.delete_outline, size: 20, color: Colors.redAccent),
+                                onPressed: (){
+                                  showDeleteDialog(context, categories.id, categories['name']);
+                                }
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                    SizedBox(height: 10),
+                    IconButton(
+                      icon: Icon(Icons.add_circle_outline),
+                      onPressed: (){
+                        showAddDialog(context, 'Expense');
+                      }, 
                     )
                   ],
                 )
               )
-            )
+            ),
           ],
         ),
       )

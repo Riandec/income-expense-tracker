@@ -86,6 +86,9 @@ class _FormPageState extends State<FormPage> {
                   filled: true,
                   fillColor: Colors.white,
                   labelText: 'Date',
+                  floatingLabelStyle: TextStyle(
+                    color: Colors.black
+                  ),
                   prefixIcon: Padding(
                     padding: EdgeInsets.only(left: 10, right: 5),
                     child: Container(
@@ -132,10 +135,14 @@ class _FormPageState extends State<FormPage> {
                   // Type
                   Expanded(
                     child: DropdownButtonFormField(
+                      isExpanded: true,
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: Colors.white,
                         labelText: 'Type',
+                        floatingLabelStyle: TextStyle(
+                          color: Colors.black
+                        ),
                         prefixIcon: Padding(
                           padding: EdgeInsets.only(left: 10, right: 5),
                           child: Container(
@@ -177,14 +184,18 @@ class _FormPageState extends State<FormPage> {
                       },
                     ),
                   ),
-                  SizedBox(width: 20),
+                  SizedBox(width: 10),
                   // Category
                   Expanded(
                     child: DropdownButtonFormField(
+                      isExpanded: true,
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: Colors.white,
                         labelText: 'Category',
+                        floatingLabelStyle: TextStyle(
+                          color: Colors.black
+                        ),
                         prefixIcon: Padding(
                           padding: EdgeInsets.only(left: 10, right: 5),
                           child: Container(
@@ -235,6 +246,9 @@ class _FormPageState extends State<FormPage> {
                   filled: true,
                   fillColor: Colors.white,
                   labelText: 'Title',
+                  floatingLabelStyle: TextStyle(
+                    color: Colors.black
+                  ),
                   prefixIcon: Padding(
                     padding: EdgeInsets.only(left: 10, right: 5),
                     child: Container(
@@ -272,6 +286,9 @@ class _FormPageState extends State<FormPage> {
                   filled: true,
                   fillColor: Colors.white,
                   labelText: 'Amount',
+                  floatingLabelStyle: TextStyle(
+                    color: Colors.black
+                  ),
                   suffixText: '฿',
                   prefixIcon: Padding(
                     padding: EdgeInsets.only(left: 10, right: 5),
@@ -309,6 +326,9 @@ class _FormPageState extends State<FormPage> {
                   filled: true,
                   fillColor: Colors.white,
                   labelText: 'Description',
+                  floatingLabelStyle: TextStyle(
+                    color: Colors.black
+                  ),
                   prefixIcon: Padding(
                     padding: EdgeInsets.only(left: 10, right: 5),
                     child: Container(

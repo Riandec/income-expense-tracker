@@ -157,11 +157,7 @@ class _OverviewPageState extends State<OverviewPage> {
                   items: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
                     .map((String month) => DropdownMenuItem(
                       value: month, 
-                      child: Text(
-                        month,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      )
+                      child: Text(month)
                     )).toList(),
                   onChanged: (String? value) {
                     setState(() {
@@ -176,6 +172,7 @@ class _OverviewPageState extends State<OverviewPage> {
               Expanded(
                 child: DropdownButtonFormField(
                   value: selectedYear,
+                  isExpanded: true,
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: Colors.white,
