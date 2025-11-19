@@ -231,7 +231,7 @@ class _OverviewPageState extends State<OverviewPage> {
                 Column(
                   children: [
                     Text(
-                      'Income',
+                      'Total Income',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -247,7 +247,7 @@ class _OverviewPageState extends State<OverviewPage> {
                 Column(
                   children: [
                     Text(
-                      'Expense',
+                      'Total Expense',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
