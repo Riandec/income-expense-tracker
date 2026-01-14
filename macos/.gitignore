@@ -5,3 +5,9 @@
 # Xcode-related
 **/dgph
 **/xcuserdata/
+
+# Firebase
+/lib/firebase_options.dart
+
+# Environment variables
+.env
